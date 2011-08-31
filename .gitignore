@@ -16,3 +16,4 @@ Debian*
 LaTex-Render-Image-*
 *.bs
 t/tmp
+test.pl
