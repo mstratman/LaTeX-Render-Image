@@ -15,7 +15,7 @@ requires 'File::Temp'       => 0;
 requires 'IO::File'         => 0;
 requires 'IPC::Cmd'         => '0.62';
 requires 'Scalar::Util'     => 0;
-requires 'Try::Tiny'        => '0.11';
+requires 'Try::Tiny'        => '0.09';
 
 test_requires  'Test::More' => 0;
 
