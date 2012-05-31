@@ -221,6 +221,7 @@ sub render_file
         LaTeX::Render::Image::Exception::IPC->throw(error => "Cannot find dvi_convert binary: " . $self->dvi_convert);
     }
 
+    my $latex_buffers;
     try {
         my ($success, $error_message, $full_buf) = run(
             command => [
@@ -232,8 +233,9 @@ sub render_file
             ], 
         );
         unless ($success) {
-            LaTeX::Render::Image::Exception::IPC->throw(error => "$latex failed with '$error_message'", output => $buffer);
+            LaTeX::Render::Image::Exception::IPC->throw(error => "$latex failed with '$error_message'", output => $full_buf);
         }
+        $latex_buffers = $full_buf;
     } catch {
         blessed $_ ?  $_->rethrow : LaTeX::Render::Image::Exception::IPC->throw(error => "run() died: $_");
     };
@@ -241,9 +243,10 @@ sub render_file
     my $dvi_file = File::Spec->catfile($tmpdir, 'out.dvi');
     # We expect latex to have created the $dvi_file
     unless (-e $dvi_file) {
-        LaTeX::Render::Image::Exception::General->throw(error => "$latex did not generate dvi file '$dvi_file': $out_and_err");
+        LaTeX::Render::Image::Exception::General->throw(error => "$latex did not generate dvi file '$dvi_file'", output => $latex_buffers);
     }
 
+    my $dvipng_buffers;
     try {
         my ($success, $error_message, $full_buf) = run(
             command => [
@@ -254,14 +257,15 @@ sub render_file
             ],
         );
         unless ($success) {
-            LaTeX::Render::Image::Exception::IPC->throw(error => "$dvipng failed with '$error_message'", output => $buffer);
+            LaTeX::Render::Image::Exception::IPC->throw(error => "$dvipng failed with '$error_message'", output => $full_buf);
         }
+        $dvipng_buffers = $full_buf;
     } catch {
         blessed $_ ?  $_->rethrow : LaTeX::Render::Image::Exception::IPC->throw(error => "run() died: $_");
     };
 
     unless (-e $outfile) {
-        LaTeX::Render::Image::Exception::General->throw(error => "$dvipng did not generate outfile '$outfile': $out_and_err");
+        LaTeX::Render::Image::Exception::General->throw(error => "$dvipng did not generate outfile '$outfile'", output => $dvipng_buffers);
     }
 
     $self->_remove_temp_dir($tmpdir);
